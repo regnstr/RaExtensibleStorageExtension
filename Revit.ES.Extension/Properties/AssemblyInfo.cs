@@ -42,5 +42,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("2022.0.*")]
 #elif REVIT2023
 [assembly: AssemblyVersion("2023.0.*")]
+#elif REVIT2025
+[assembly: AssemblyVersion("2025.0.*")]
 #endif
 

@@ -10,6 +10,7 @@
 
 using System;
 using System.Reflection;
+using System.Windows;
 using Autodesk.Revit.DB.ExtensibleStorage;
 using Revit.ES.Extension.Attributes;
 
@@ -33,7 +34,7 @@ namespace Revit.ES.Extension
         {
             SchemaAttribute schemaAttribute = 
                 _schemaAttributeExtractor.GetAttribute(type);
-            
+
             // Create a new Schema using SchemaAttribute Properties
             SchemaBuilder schemaBuilder = new SchemaBuilder(schemaAttribute.GUID);
             schemaBuilder.SetSchemaName(schemaAttribute.SchemaName);
@@ -60,13 +61,13 @@ namespace Revit.ES.Extension
             foreach (var pi in properties)
             {
                 //get the field attribute of public properties
-                var propertyAttributes = 
+                var propertyAttributes =
                     pi.GetCustomAttributes(typeof (FieldAttribute), true);
 
                 // if property does not have a FieldAttribute
                 // skip this property
                 if (propertyAttributes.Length == 0)
-                    continue;
+                        continue;
 
                 FieldAttribute fieldAttribute = 
                     _fieldAttributeExtractor.GetAttribute(pi);
@@ -93,9 +94,9 @@ namespace Revit.ES.Extension
                 if (!string.IsNullOrEmpty(fieldAttribute.Documentation))
                     fieldBuilder.SetDocumentation(fieldAttribute.Documentation);
                 if (fieldBuilder.NeedsUnits())
-                    fieldBuilder.SetUnitType(fieldAttribute.UnitType);
+                    fieldBuilder.SetSpec(fieldAttribute.ForgeTypeId);
 
-                
+
             }
 
             return schemaBuilder.Finish();

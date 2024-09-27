@@ -78,15 +78,15 @@ namespace Revit.ES.Extension
 
                         propertyValue = ConvertSimpleProperty(propertyValue, field);
 
-                        if (field.UnitType == UnitType.UT_Undefined)
+                        if (field.GetSpecTypeId().Empty())
                         {
                             entity.Set(field, propertyValue);
                         }
                         else
                         {
-                            var firstCompatibleDUT = GetFirstCompatibleDUT(field);
+                            var firstCompatibleFTI = GetFirstCompatibleFTI(field);
 
-                            entity.Set(field, propertyValue, firstCompatibleDUT);
+                            entity.Set(field, propertyValue, firstCompatibleFTI);
                         }
 
                         break;
@@ -110,18 +110,18 @@ namespace Revit.ES.Extension
                          * IList parameter instead FieldType, it works propoerly
                          */
 
-                        if (field.UnitType == UnitType.UT_Undefined)
+                        if (field.GetSpecTypeId().Empty())
                         {
                             EntityExtension.SetWrapper(entity, field, convertedIListFieldValue);
                         }
                         else
                         {
-                            var firstCompatibleDUT = GetFirstCompatibleDUT(field);
+                            var firstCompatibleFTI = GetFirstCompatibleFTI(field);
 
                             EntityExtension.SetWrapper(entity,
                                 field,
                                 convertedIListFieldValue,
-                                firstCompatibleDUT);
+                                firstCompatibleFTI);
                         }
 
                         break;
@@ -130,18 +130,18 @@ namespace Revit.ES.Extension
                         var convertedMapFieldValue =
                             ConvertIDictionaryProperty(propertyValue, field);
 
-                        if (field.UnitType == UnitType.UT_Undefined)
+                        if (field.GetSpecTypeId().Empty())
                         {
                             EntityExtension.SetWrapper(entity, field, convertedMapFieldValue);
                         }
                         else
                         {
-                            var firstCompatibleDUT = GetFirstCompatibleDUT(field);
+                            var firstCompatibleFTI = GetFirstCompatibleFTI(field);
 
                             EntityExtension.SetWrapper(entity,
                                 field,
                                 convertedMapFieldValue,
-                                firstCompatibleDUT);
+                                firstCompatibleFTI);
                         }
                         break;
                     default:
@@ -575,33 +575,33 @@ namespace Revit.ES.Extension
             }
 
             object entityValue;
-            if (field.UnitType == UnitType.UT_Undefined)
+            if (field.GetSpecTypeId().Empty())
             {
                 MethodInfo entityGetMethod =
                     entity
                         .GetType()
-                        .GetMethod("Get", new[] {typeof (Field)});
+                        .GetMethod("Get", [typeof (Field)]);
                 MethodInfo entityGetMethodGeneric =
                     entityGetMethod
                         .MakeGenericMethod(fieldValueType);
 
-                entityValue = entityGetMethodGeneric.Invoke(entity, new[] {field});
+                entityValue = entityGetMethodGeneric.Invoke(entity, [field]);
             }
             else
             {
-                var firstCompatibleDUT = GetFirstCompatibleDUT(field);
+                var firstCompatibleFTI = GetFirstCompatibleFTI(field);
 
                 MethodInfo entityGetMethod =
                     entity
                         .GetType()
-                        .GetMethod("Get", new[] { typeof(Field), typeof(DisplayUnitType) });
+                        .GetMethod("Get", [typeof(Field), typeof(ForgeTypeId)]);
                 MethodInfo entityGetMethodGeneric =
                     entityGetMethod
                         .MakeGenericMethod(fieldValueType);
 
                 entityValue =
                     entityGetMethodGeneric
-                        .Invoke(entity, new object[] {field, firstCompatibleDUT});
+                        .Invoke(entity, [field, firstCompatibleFTI]);
             }
             return entityValue;
         }
@@ -610,22 +610,23 @@ namespace Revit.ES.Extension
         {
             MethodInfo convertMethod =
                     GetType()
-                    .GetMethod("Convert", new[] { typeof(Entity) });
+                    .GetMethod("Convert", [ typeof(Entity)]);
             MethodInfo convertMethodGeneric =
                 convertMethod.MakeGenericMethod(irevitEntityType);
-            var iRevitEntity = convertMethodGeneric.Invoke(this, new[] { entity });
+            var iRevitEntity = convertMethodGeneric.Invoke(this, [entity]);
 
             return iRevitEntity;
         }
 
-        private DisplayUnitType GetFirstCompatibleDUT(Field field)
+        private ForgeTypeId GetFirstCompatibleFTI(Field field)
         {
-            var firstCompatibleDUT = Enum
-                    .GetValues(typeof(DisplayUnitType))
-                    .OfType<DisplayUnitType>()
-                    .FirstOrDefault(field.CompatibleDisplayUnitType);
+            var type = typeof(UnitTypeId);
+            var firstCompatibleFTI = type
+                .GetFields(BindingFlags.Static)
+                .Select(x => x.GetValue(null) as ForgeTypeId)
+                .FirstOrDefault(field.CompatibleUnit);
 
-            return firstCompatibleDUT;
+            return firstCompatibleFTI;
         }
 
     }

@@ -18,10 +18,10 @@ namespace Revit.ES.Extension.Attributes
     {
         public FieldAttribute()
         {
-            UnitType = UnitType.UT_Undefined;
+            //ForgeTypeId = ForgeTypeId.Clear();
         }
 
         public string Documentation { get; set; }
-        public UnitType UnitType { get; set; }
+        public ForgeTypeId ForgeTypeId { get; set; }
     }
 }
