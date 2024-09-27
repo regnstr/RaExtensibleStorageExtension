@@ -18,7 +18,7 @@ namespace Revit.ES.Extension.Attributes
     {
         public FieldAttribute()
         {
-            //ForgeTypeId = ForgeTypeId.Clear();
+            ForgeTypeId = new ForgeTypeId();
         }
 
         public string Documentation { get; set; }
